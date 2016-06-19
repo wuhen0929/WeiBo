@@ -31,6 +31,7 @@ import com.wenming.weiswift.ui.login.fragment.profile.followers.FollowerActivity
 import com.wenming.weiswift.ui.login.fragment.profile.friends.FriendsActivity;
 import com.wenming.weiswift.ui.login.fragment.profile.myweibo.MyWeiBoActivity;
 import com.wenming.weiswift.ui.login.fragment.profile.setting.SettingActivity;
+import com.wenming.weiswift.ui.react.ReactNativeActivity;
 import com.wenming.weiswift.widget.mdprogressbar.CircleProgressBar;
 
 /**
@@ -93,6 +94,14 @@ public class ProfileFragment extends Fragment implements ProfileFragmentView {
         mMyPhoto_Layout = (RelativeLayout) mView.findViewById(R.id.myphoto_layout);
         mSettings = (TextView) mView.findViewById(R.id.setting);
         mProgressBar = (CircleProgressBar) mView.findViewById(R.id.progressbar);
+
+        mView.findViewById(R.id.more_layout).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(mContext, ReactNativeActivity.class);
+                mActivity.startActivity(intent);
+            }
+        });
 
         mProgressBar.setColorSchemeResources(android.R.color.holo_green_light, android.R.color.holo_orange_light, android.R.color.holo_red_light);
         refreshUserDetail(mContext, true);

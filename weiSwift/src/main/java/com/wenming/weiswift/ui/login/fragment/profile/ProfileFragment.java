@@ -26,9 +26,11 @@ import com.wenming.weiswift.mvp.presenter.imp.ProfileFragmentPresentImp;
 import com.wenming.weiswift.mvp.view.ProfileFragmentView;
 import com.wenming.weiswift.ui.common.NewFeature;
 import com.wenming.weiswift.ui.common.login.AccessTokenKeeper;
+import com.wenming.weiswift.ui.login.fragment.home.userdetail.UserActivity;
 import com.wenming.weiswift.ui.login.fragment.profile.favorites.FavoritiesActivity;
 import com.wenming.weiswift.ui.login.fragment.profile.followers.FollowerActivity;
 import com.wenming.weiswift.ui.login.fragment.profile.friends.FriendsActivity;
+import com.wenming.weiswift.ui.login.fragment.profile.myphoto.MyPhotoActivity;
 import com.wenming.weiswift.ui.login.fragment.profile.myweibo.MyWeiBoActivity;
 import com.wenming.weiswift.ui.login.fragment.profile.setting.SettingActivity;
 import com.wenming.weiswift.ui.react.ReactNativeActivity;
@@ -58,6 +60,11 @@ public class ProfileFragment extends Fragment implements ProfileFragmentView {
     private ProfileFragmentPresent mProfileFragmentPresent;
     private CircleProgressBar mProgressBar;
     private ScrollView mScrollView;
+    private RelativeLayout mMyprofile_layout;
+    private User mUser;
+
+    public ProfileFragment() {
+    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -94,6 +101,7 @@ public class ProfileFragment extends Fragment implements ProfileFragmentView {
         mMyPhoto_Layout = (RelativeLayout) mView.findViewById(R.id.myphoto_layout);
         mSettings = (TextView) mView.findViewById(R.id.setting);
         mProgressBar = (CircleProgressBar) mView.findViewById(R.id.progressbar);
+        mMyprofile_layout = (RelativeLayout) mView.findViewById(R.id.myprofile_layout);
 
         mView.findViewById(R.id.more_layout).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -163,7 +171,9 @@ public class ProfileFragment extends Fragment implements ProfileFragmentView {
         mMyPhoto_Layout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
+                Intent intent = new Intent(mActivity, MyPhotoActivity.class);
+                intent.putExtra("screeenName", mUser.screen_name);
+                startActivity(intent);
             }
         });
         mFavorities_Layout.setOnClickListener(new View.OnClickListener() {
@@ -171,6 +181,14 @@ public class ProfileFragment extends Fragment implements ProfileFragmentView {
             public void onClick(View v) {
                 Intent intent = new Intent(mActivity, FavoritiesActivity.class);
                 startActivity(intent);
+            }
+        });
+        mMyprofile_layout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(mContext, UserActivity.class);
+                intent.putExtra("screenName", mUser.screen_name);
+                mContext.startActivity(intent);
             }
         });
     }
@@ -186,6 +204,7 @@ public class ProfileFragment extends Fragment implements ProfileFragmentView {
     @Override
     public void setUserDetail(User user) {
         if (user != null) {
+            mUser = user;
             ImageLoader.getInstance().displayImage(user.avatar_hd, mProfile_myimg, options);
             mProfile_myname.setText(user.name);
             mProfile_mydescribe.setText("简介:" + user.description);

@@ -3,8 +3,8 @@ package com.wenming.weiswift.ui.login.fragment.home.weiboitemdetail.headview;
 import android.content.Context;
 import android.graphics.Color;
 import android.support.v7.widget.RecyclerView;
-import android.view.Gravity;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
@@ -12,7 +12,13 @@ import android.widget.TextView;
 
 import com.wenming.weiswift.R;
 import com.wenming.weiswift.entity.Status;
+import com.wenming.weiswift.mvp.model.imp.StatusDetailModelImp;
 import com.wenming.weiswift.ui.common.FillContent;
+import com.wenming.weiswift.ui.common.dialog.ArrowDialog;
+import com.wenming.weiswift.ui.login.fragment.home.weiboitem.TimelineArrowWindow;
+import com.wenming.weiswift.utils.DensityUtil;
+import com.wenming.weiswift.utils.ScreenUtil;
+import com.wenming.weiswift.utils.SharedPreferencesUtil;
 import com.wenming.weiswift.widget.emojitextview.EmojiTextView;
 
 import static com.wenming.weiswift.R.id.noneLayout;
@@ -40,10 +46,20 @@ public class OriginPicTextHeaderView extends LinearLayout {
     private ImageView mRetweetIndicator;
     private ImageView mPopover_arrow;
     private OnDetailButtonClickListener onDetailButtonClickListener;
+    private int mType = StatusDetailModelImp.COMMENT_PAGE;
 
-    public OriginPicTextHeaderView(Context context, Status status) {
+    public OriginPicTextHeaderView(Context context, Status status, int type) {
         super(context);
+        mType = type;
         init(context, status);
+        switch (mType) {
+            case StatusDetailModelImp.COMMENT_PAGE:
+                commentHighlight();
+                break;
+            case StatusDetailModelImp.REPOST_PAGE:
+                repostHighlight();
+                break;
+        }
     }
 
     public void setOnDetailButtonClickListener(OnDetailButtonClickListener onDetailButtonClickListener) {
@@ -77,42 +93,88 @@ public class OriginPicTextHeaderView extends LinearLayout {
         FillContent.fillWeiBoContent(status.text, context, weibo_content);
         FillContent.fillWeiBoImgList(status, context, imageList);
         FillContent.showButtonBar(View.GONE, bottombar_layout);
-        FillContent.FillDetailBar(status.comments_count, status.reposts_count, status.reposts_count, commentView, retweetView, likeView);
-        FillContent.RefreshNoneView(mContext, status.comments_count, mNoneView);
+        FillContent.fillDetailBar(status.comments_count, status.reposts_count, status.reposts_count, commentView, retweetView, likeView);
+        FillContent.refreshNoneView(mContext, mType, status.reposts_count, status.comments_count, mNoneView);
+
+        boolean isNightMode = (boolean) SharedPreferencesUtil.get(mContext, "setNightMode", false);
+        if (isNightMode) {
+            likeView.setTextColor(Color.parseColor("#45484a"));
+        }else {
+            likeView.setTextColor(Color.parseColor("#828282"));
+        }
 
         mPopover_arrow.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                DetailWeiBoArrowWindow detailWeiBoArrowWindow = new DetailWeiBoArrowWindow(mContext, status);
-                detailWeiBoArrowWindow.showAtLocation(mView, Gravity.CENTER, 0, 0);
+//                DetailWeiBoArrowWindow detailWeiBoArrowWindow = new DetailWeiBoArrowWindow(mContext, status);
+//                detailWeiBoArrowWindow.showAtLocation(mView, Gravity.CENTER, 0, 0);
+
+                ArrowDialog arrowDialog = new TimelineArrowWindow.Builder(mContext, status)
+                        .setCanceledOnTouchOutside(true)
+                        .setCancelable(true)
+                        .create();
+                int width = ScreenUtil.getScreenWidth(mContext) - DensityUtil.dp2px(mContext, 80);
+                arrowDialog.show();
+                arrowDialog.getWindow().setLayout(width, (ViewGroup.LayoutParams.WRAP_CONTENT));
+
             }
         });
 
         retweetView.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
+                repostHighlight();
                 onDetailButtonClickListener.OnRetweet();
+                //FillContent.refreshNoneView(mContext, mType, status.reposts_count, status.comments_count, mNoneView);
             }
         });
 
         commentView.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                commentView.setTextColor(Color.parseColor("#000000"));
-                mCommentIndicator.setVisibility(View.VISIBLE);
-
-                retweetView.setTextColor(Color.parseColor("#828282"));
-                mRetweetIndicator.setVisibility(View.INVISIBLE);
-
+                commentHighlight();
                 onDetailButtonClickListener.OnComment();
+                //FillContent.refreshNoneView(mContext, mType, status.reposts_count, status.comments_count, mNoneView);
             }
         });
 
     }
 
     public void refreshDetailBar(int comments_count, int reposts_count, int attitudes_count) {
-        FillContent.FillDetailBar(comments_count, reposts_count, attitudes_count, commentView, retweetView, likeView);
-        FillContent.RefreshNoneView(mContext, comments_count, mNoneView);
+        FillContent.fillDetailBar(comments_count, reposts_count, attitudes_count, commentView, retweetView, likeView);
+        FillContent.refreshNoneView(mContext, mType, reposts_count, comments_count, mNoneView);
+    }
+
+    public void commentHighlight() {
+        boolean isNightMode = (boolean) SharedPreferencesUtil.get(mContext, "setNightMode", false);
+        if (!isNightMode) {
+            commentView.setTextColor(Color.parseColor("#000000"));
+            mCommentIndicator.setVisibility(View.VISIBLE);
+            retweetView.setTextColor(Color.parseColor("#828282"));
+            mRetweetIndicator.setVisibility(View.INVISIBLE);
+        } else {
+            commentView.setTextColor(Color.parseColor("#888888"));
+            mCommentIndicator.setVisibility(View.VISIBLE);
+            retweetView.setTextColor(Color.parseColor("#45484a"));
+            mRetweetIndicator.setVisibility(View.INVISIBLE);
+        }
+
+
+    }
+
+    public void repostHighlight() {
+        boolean isNightMode = (boolean) SharedPreferencesUtil.get(mContext, "setNightMode", false);
+        if (!isNightMode) {
+            retweetView.setTextColor(Color.parseColor("#000000"));
+            mRetweetIndicator.setVisibility(View.VISIBLE);
+            commentView.setTextColor(Color.parseColor("#828282"));
+            mCommentIndicator.setVisibility(View.INVISIBLE);
+        } else {
+            retweetView.setTextColor(Color.parseColor("#888888"));
+            mRetweetIndicator.setVisibility(View.VISIBLE);
+            commentView.setTextColor(Color.parseColor("#45484a"));
+            mCommentIndicator.setVisibility(View.INVISIBLE);
+        }
     }
 
 }

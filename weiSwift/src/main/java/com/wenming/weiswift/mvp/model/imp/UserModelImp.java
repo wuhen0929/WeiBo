@@ -51,14 +51,21 @@ public class UserModelImp implements UserModel {
      *
      * @param uid
      * @param context
-     * @param onUserRequestFinish
      */
     @Override
-    public void show(long uid, final Context context, final OnUserDetailRequestFinish onUserRequestFinish) {
+    public void show(long uid, final Context context, final OnUserDetailRequestFinish onUserDetailRequestFinish) {
         UsersAPI mUsersAPI = new UsersAPI(context, Constants.APP_KEY, AccessTokenKeeper.readAccessToken(context));
         mContext = context;
-        mOnUserDetailRequestFinish = onUserRequestFinish;
+        mOnUserDetailRequestFinish = onUserDetailRequestFinish;
         mUsersAPI.show(uid, user_PullToRefresh);
+    }
+
+    @Override
+    public void show(String screenName, Context context, OnUserDetailRequestFinish onUserDetailRequestFinish) {
+        UsersAPI mUsersAPI = new UsersAPI(context, Constants.APP_KEY, AccessTokenKeeper.readAccessToken(context));
+        mContext = context;
+        mOnUserDetailRequestFinish = onUserDetailRequestFinish;
+        mUsersAPI.show(screenName, user_PullToRefresh);
     }
 
     /**
@@ -88,8 +95,26 @@ public class UserModelImp implements UserModel {
         StatusesAPI mStatusesAPI = new StatusesAPI(context, Constants.APP_KEY, AccessTokenKeeper.readAccessToken(context));
         mContext = context;
         mOnStatusListFinishedListener = onStatusFinishedListener;
-        long sinceId = checkout(groupId);
-        mStatusesAPI.userTimeline(uid, sinceId, 0, NewFeature.GET_WEIBO_NUMS, 1, false, groupId, false, statuslist_PullToRefresh);
+        //long sinceId = checkout(groupId);
+        mStatusesAPI.userTimeline(uid, 0, 0, NewFeature.GET_WEIBO_NUMS, 1, false, groupId, false, statuslist_PullToRefresh);
+    }
+
+    @Override
+    public void userTimeline(String screenName, int groupId, Context context, OnStatusListFinishedListener onStatusFinishedListener) {
+        StatusesAPI mStatusesAPI = new StatusesAPI(context, Constants.APP_KEY, AccessTokenKeeper.readAccessToken(context));
+        mContext = context;
+        mOnStatusListFinishedListener = onStatusFinishedListener;
+        //long sinceId = checkout(groupId);
+        mStatusesAPI.userTimeline(screenName, 0, 0, NewFeature.GET_WEIBO_NUMS, 1, false, groupId, false, statuslist_PullToRefresh);
+    }
+
+    @Override
+    public void userPhoto(String screenName, int groupId, Context context, OnStatusListFinishedListener onStatusFinishedListener) {
+        StatusesAPI mStatusesAPI = new StatusesAPI(context, Constants.APP_KEY, AccessTokenKeeper.readAccessToken(context));
+        mContext = context;
+        mOnStatusListFinishedListener = onStatusFinishedListener;
+        //long sinceId = checkout(groupId);
+        mStatusesAPI.userTimeline(screenName, 0, 0, 50, 1, false, StatusesAPI.FEATURE_PICTURE, false, statuslist_PullToRefresh);
     }
 
     /**
@@ -130,6 +155,22 @@ public class UserModelImp implements UserModel {
         mContext = context;
         mOnStatusListFinishedListener = onStatusFinishedListener;
         mStatusesAPI.userTimeline(uid, 0, Long.valueOf(mStatusList.get(mStatusList.size() - 1).id), NewFeature.LOADMORE_WEIBO_ITEM, 1, false, groupId, false, statuslist_NextPage);
+    }
+
+    @Override
+    public void userTimelineNextPage(String screenName, int groupId, Context context, OnStatusListFinishedListener onStatusFinishedListener) {
+        StatusesAPI mStatusesAPI = new StatusesAPI(context, Constants.APP_KEY, AccessTokenKeeper.readAccessToken(context));
+        mContext = context;
+        mOnStatusListFinishedListener = onStatusFinishedListener;
+        mStatusesAPI.userTimeline(screenName, 0, Long.valueOf(mStatusList.get(mStatusList.size() - 1).id), NewFeature.LOADMORE_WEIBO_ITEM, 1, false, groupId, false, statuslist_NextPage);
+    }
+
+    @Override
+    public void userPhotoNextPage(String screenName, int groupId, Context context, OnStatusListFinishedListener onStatusFinishedListener) {
+        StatusesAPI mStatusesAPI = new StatusesAPI(context, Constants.APP_KEY, AccessTokenKeeper.readAccessToken(context));
+        mContext = context;
+        mOnStatusListFinishedListener = onStatusFinishedListener;
+        mStatusesAPI.userTimeline(screenName, 0, Long.valueOf(mStatusList.get(mStatusList.size() - 1).id), 50, 1, false, StatusesAPI.FEATURE_PICTURE, false, statuslist_NextPage);
     }
 
 
@@ -412,7 +453,6 @@ public class UserModelImp implements UserModel {
                 cacheSave_statuslist(mCurrentGroup, mContext, response);
                 mOnStatusListFinishedListener.onDataFinish(mStatusList);
             } else {
-                ToastUtil.showShort(mContext, "没有更新的内容了");
                 mOnStatusListFinishedListener.noMoreDate();
             }
         }

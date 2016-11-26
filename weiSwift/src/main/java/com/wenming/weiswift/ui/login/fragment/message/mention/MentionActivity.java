@@ -1,6 +1,5 @@
 package com.wenming.weiswift.ui.login.fragment.message.mention;
 
-import android.app.Activity;
 import android.content.Context;
 import android.graphics.Rect;
 import android.os.Bundle;
@@ -9,6 +8,7 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.Gravity;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -18,9 +18,10 @@ import com.wenming.weiswift.entity.Status;
 import com.wenming.weiswift.mvp.presenter.MentionActivityPresent;
 import com.wenming.weiswift.mvp.presenter.imp.MentionActivityPresentImp;
 import com.wenming.weiswift.mvp.view.MentionActivityView;
+import com.wenming.weiswift.ui.common.BaseActivity;
+import com.wenming.weiswift.ui.common.dialog.ArrowDialog;
 import com.wenming.weiswift.ui.common.login.Constants;
 import com.wenming.weiswift.ui.login.fragment.message.IGroupItemClick;
-import com.wenming.weiswift.ui.login.fragment.message.ItemSapce;
 import com.wenming.weiswift.ui.login.fragment.message.comment.CommentAdapter;
 import com.wenming.weiswift.utils.DensityUtil;
 import com.wenming.weiswift.utils.ScreenUtil;
@@ -34,7 +35,7 @@ import java.util.ArrayList;
 /**
  * Created by wenmingvs on 16/4/26.
  */
-public class MentionActivity extends Activity implements MentionActivityView {
+public class MentionActivity extends BaseActivity implements MentionActivityView {
     private ArrayList<Status> mMentionDatas;
     private ArrayList<Comment> mCommentDatas;
     private MentionAdapter mMentionAdapter;
@@ -109,14 +110,33 @@ public class MentionActivity extends Activity implements MentionActivityView {
         });
     }
 
+    public void onArrorClick(View view) {
+        finish();
+    }
 
     private void initRecyclerView() {
-        mMentionAdapter = new MentionAdapter(mContext, mMentionDatas);
+        mMentionAdapter = new MentionAdapter(mContext, mMentionDatas) {
+            @Override
+            public void arrowClick(Status status, int position) {
+//                MentionArrowWindow popupWindow = new MentionArrowWindow(mContext, status);
+//                popupWindow.showAtLocation(mRecyclerView, Gravity.CENTER, 0, 0);
+
+                ArrowDialog arrowDialog = new MentionArrowWindow
+                        .Builder(mContext, status)
+                        .setCanceledOnTouchOutside(true)
+                        .setCancelable(true)
+                        .create();
+                int width = ScreenUtil.getScreenWidth(mContext) - DensityUtil.dp2px(mContext, 80);
+                arrowDialog.show();
+                arrowDialog.getWindow().setLayout(width, (ViewGroup.LayoutParams.WRAP_CONTENT));
+
+
+            }
+        };
         mMentionFooterAdapter = new HeaderAndFooterRecyclerViewAdapter(mMentionAdapter);
         LinearLayoutManager layoutManager = new LinearLayoutManager(mContext, LinearLayoutManager.VERTICAL, false);
         mRecyclerView.setLayoutManager(layoutManager);
         mRecyclerView.setAdapter(mMentionFooterAdapter);
-        mRecyclerView.addItemDecoration(new ItemSapce(DensityUtil.dp2px(mContext, 14)));
     }
 
 
@@ -142,23 +162,29 @@ public class MentionActivity extends Activity implements MentionActivityView {
         }
     };
 
-
-    public void onArrorClick(View view) {
-        finish();
-    }
-
-
     @Override
     public void updateMentionListView(ArrayList<Status> mentionlist, boolean resetAdapter) {
         if (resetAdapter) {
-            mMentionAdapter = new MentionAdapter(mContext, mMentionDatas);
+            mMentionAdapter = new MentionAdapter(mContext, mMentionDatas) {
+                @Override
+                public void arrowClick(Status status, int position) {
+//                    MentionArrowWindow popupWindow = new MentionArrowWindow(mContext, status);
+//                    popupWindow.showAtLocation(mRecyclerView, Gravity.CENTER, 0, 0);
+
+                    ArrowDialog arrowDialog = new MentionArrowWindow.Builder(mContext, status)
+                            .setCanceledOnTouchOutside(true)
+                            .setCancelable(true)
+                            .create();
+                    int width = ScreenUtil.getScreenWidth(mContext) - DensityUtil.dp2px(mContext, 80);
+                    arrowDialog.show();
+                    arrowDialog.getWindow().setLayout(width, (ViewGroup.LayoutParams.WRAP_CONTENT));
+                }
+            };
             mMentionFooterAdapter = new HeaderAndFooterRecyclerViewAdapter(mMentionAdapter);
             LinearLayoutManager layoutManager = new LinearLayoutManager(mContext, LinearLayoutManager.VERTICAL, false);
             mRecyclerView.setLayoutManager(layoutManager);
             mRecyclerView.setAdapter(mMentionFooterAdapter);
         }
-
-
         mRecyclerView.clearOnScrollListeners();
         mRecyclerView.addOnScrollListener(mOnMentionScrollListener);
         mMentionDatas = mentionlist;
@@ -176,7 +202,6 @@ public class MentionActivity extends Activity implements MentionActivityView {
             mRecyclerView.setLayoutManager(layoutManager);
             mRecyclerView.setAdapter(mCommentFooterAdapter);
         }
-
 
         mRecyclerView.clearOnScrollListeners();
         mRecyclerView.addOnScrollListener(mOnCommentScrollListener);

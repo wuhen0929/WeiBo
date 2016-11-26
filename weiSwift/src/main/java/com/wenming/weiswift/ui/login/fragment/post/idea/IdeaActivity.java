@@ -14,26 +14,29 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.ScrollView;
 import android.widget.TextView;
 
-import com.sina.weibo.sdk.auth.Oauth2AccessToken;
 import com.sina.weibo.sdk.exception.WeiboException;
 import com.sina.weibo.sdk.net.RequestListener;
 import com.sina.weibo.sdk.openapi.models.ErrorInfo;
 import com.wenming.weiswift.R;
-import com.wenming.weiswift.api.StatusesAPI;
 import com.wenming.weiswift.api.UsersAPI;
+import com.wenming.weiswift.entity.Comment;
 import com.wenming.weiswift.entity.Status;
 import com.wenming.weiswift.entity.User;
+import com.wenming.weiswift.ui.common.BaseActivity;
 import com.wenming.weiswift.ui.common.FillContent;
 import com.wenming.weiswift.ui.common.login.AccessTokenKeeper;
 import com.wenming.weiswift.ui.common.login.Constants;
 import com.wenming.weiswift.ui.login.fragment.post.PostService;
+import com.wenming.weiswift.ui.login.fragment.post.bean.CommentReplyBean;
+import com.wenming.weiswift.ui.login.fragment.post.bean.WeiBoCommentBean;
+import com.wenming.weiswift.ui.login.fragment.post.bean.WeiBoCreateBean;
 import com.wenming.weiswift.ui.login.fragment.post.idea.imagelist.ImgListAdapter;
 import com.wenming.weiswift.ui.login.fragment.post.picselect.activity.AlbumActivity;
 import com.wenming.weiswift.ui.login.fragment.post.picselect.bean.AlbumFolderInfo;
 import com.wenming.weiswift.ui.login.fragment.post.picselect.bean.ImageInfo;
+import com.wenming.weiswift.utils.KeyBoardUtil;
 import com.wenming.weiswift.utils.ToastUtil;
 import com.wenming.weiswift.widget.emojitextview.WeiBoContentTextUtil;
 
@@ -42,12 +45,8 @@ import java.util.ArrayList;
 /**
  * Created by wenmingvs on 16/5/2.
  */
-public class IdeaActivity extends Activity implements ImgListAdapter.OnFooterViewClickListener {
-
-    private StatusesAPI mStatusesAPI;
-    private Oauth2AccessToken mAccessToken;
+public class IdeaActivity extends BaseActivity implements ImgListAdapter.OnFooterViewClickListener {
     private UsersAPI mUsersAPI;
-
     private Context mContext;
     private TextView mCancal;
     private TextView mUserName;
@@ -60,17 +59,22 @@ public class IdeaActivity extends Activity implements ImgListAdapter.OnFooterVie
     private ImageView more_button;
     private EditText mEditText;
     private TextView mLimitTextView;
-
+    private TextView mInputType;
     private LinearLayout mRepostlayout;
     private ImageView repostImg;
     private TextView repostName;
     private TextView repostContent;
     private RecyclerView mRecyclerView;
-    private ScrollView mScrollView;
+    private ImageView mBlankspace;
+    private LinearLayout mIdea_linearLayout;
 
     private ArrayList<AlbumFolderInfo> mFolderList = new ArrayList<AlbumFolderInfo>();
     private ArrayList<ImageInfo> mSelectImgList = new ArrayList<ImageInfo>();
     private Status mStatus;
+    private Comment mComment;
+    private String mIdeaType;
+
+
     /**
      * 最多输入140个字符
      */
@@ -82,12 +86,14 @@ public class IdeaActivity extends Activity implements ImgListAdapter.OnFooterVie
     private static final int TEXT_REMIND = 10;
 
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.compose_idea_layout);
         mContext = this;
-
+        mUsersAPI = new UsersAPI(mContext, Constants.APP_KEY, AccessTokenKeeper.readAccessToken(this));
+        mInputType = (TextView) findViewById(R.id.inputType);
         mCancal = (TextView) findViewById(R.id.idea_cancal);
         mUserName = (TextView) findViewById(R.id.idea_username);
         mSendButton = (TextView) findViewById(R.id.idea_send);
@@ -104,12 +110,16 @@ public class IdeaActivity extends Activity implements ImgListAdapter.OnFooterVie
         repostName = (TextView) findViewById(R.id.repost_name);
         repostContent = (TextView) findViewById(R.id.repost_content);
         mRecyclerView = (RecyclerView) findViewById(R.id.ImgList);
-        mScrollView = (ScrollView) findViewById(R.id.scrollView);
-
-        initAccessToken();
+        mBlankspace = (ImageView) findViewById(R.id.blankspace);
+        mIdea_linearLayout = (LinearLayout) findViewById(R.id.idea_linearLayout);
+        mIdeaType = getIntent().getStringExtra("ideaType");
+        mStatus = getIntent().getParcelableExtra("status");
+        mComment = getIntent().getParcelableExtra("comment");
+        mInputType.setText(mIdeaType);
+        refreshUserName();
         initContent();
         setUpListener();
-
+        mEditText.setTag(false);
         if (getIntent().getBooleanExtra("startAlumbAcitivity", false) == true) {
             Intent intent = new Intent(IdeaActivity.this, AlbumActivity.class);
             intent.putParcelableArrayListExtra("selectedImglist", mSelectImgList);
@@ -124,11 +134,6 @@ public class IdeaActivity extends Activity implements ImgListAdapter.OnFooterVie
         });
     }
 
-    private void initAccessToken() {
-        mAccessToken = AccessTokenKeeper.readAccessToken(this);
-        mStatusesAPI = new StatusesAPI(this, Constants.APP_KEY, mAccessToken);
-        mUsersAPI = new UsersAPI(mContext, Constants.APP_KEY, mAccessToken);
-    }
 
     /**
      * 填充内容，
@@ -136,13 +141,29 @@ public class IdeaActivity extends Activity implements ImgListAdapter.OnFooterVie
      * 2. 转发的内容是原创微博，
      */
     private void initContent() {
-        refreshUserName();
-        mStatus = getIntent().getParcelableExtra("status");
+        switch (mIdeaType) {
+            case PostService.POST_SERVICE_CREATE_WEIBO:
+                break;
+            case PostService.POST_SERVICE_REPOST_STATUS:
+                //填充转发的内容
+                repostWeiBo();
+                break;
+            case PostService.POST_SERVICE_COMMENT_STATUS:
+                break;
+            case PostService.POST_SERVICE_REPLY_COMMENT:
+                break;
+        }
+    }
+
+
+    /**
+     * 填充转发的内容
+     */
+    private void repostWeiBo() {
 
         if (mStatus == null) {
             return;
         }
-
         mRepostlayout.setVisibility(View.VISIBLE);
         mEditText.setHint("说说分享的心得");
 
@@ -151,7 +172,6 @@ public class IdeaActivity extends Activity implements ImgListAdapter.OnFooterVie
             mEditText.setText(WeiBoContentTextUtil.getWeiBoContent("//@" + mStatus.user.name + ":" + mStatus.text, mContext, mEditText));
             FillContent.fillMentionCenterContent(mStatus.retweeted_status, repostImg, repostName, repostContent);
             mEditText.setSelection(0);
-
         }
         //2. 转发的内容是原创微博
         else if (mStatus.retweeted_status == null) {
@@ -160,8 +180,11 @@ public class IdeaActivity extends Activity implements ImgListAdapter.OnFooterVie
         changeSendButtonBg();
     }
 
+    /**
+     * 刷新顶部的名字
+     */
     private void refreshUserName() {
-        long uid = Long.parseLong(mAccessToken.getUid());
+        long uid = Long.parseLong(AccessTokenKeeper.readAccessToken(this).getUid());
         mUsersAPI.show(uid, new RequestListener() {
             @Override
             public void onComplete(String response) {
@@ -222,7 +245,6 @@ public class IdeaActivity extends Activity implements ImgListAdapter.OnFooterVie
                 ToastUtil.showShort(mContext, "正在开发此功能...");
             }
         });
-
         mEditText.addTextChangedListener(watcher);
         mSendButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -242,9 +264,34 @@ public class IdeaActivity extends Activity implements ImgListAdapter.OnFooterVie
                     return;
                 }
                 Intent intent = new Intent(mContext, PostService.class);
-                intent.putParcelableArrayListExtra("select_img", mSelectImgList);
-                intent.putExtra("content", mEditText.getText().toString());
-                intent.putExtra("status", mStatus);
+                Bundle bundle = new Bundle();
+
+                switch (mIdeaType) {
+                    case PostService.POST_SERVICE_CREATE_WEIBO:
+                        WeiBoCreateBean weiboBean = new WeiBoCreateBean(mEditText.getText().toString(), mSelectImgList);
+                        intent.putExtra("postType", PostService.POST_SERVICE_CREATE_WEIBO);
+                        bundle.putParcelable("weiBoCreateBean", weiboBean);
+                        intent.putExtras(bundle);
+                        break;
+                    case PostService.POST_SERVICE_REPOST_STATUS:
+                        WeiBoCreateBean repostBean = new WeiBoCreateBean(mEditText.getText().toString(), mSelectImgList, mStatus);
+                        intent.putExtra("postType", PostService.POST_SERVICE_REPOST_STATUS);
+                        bundle.putParcelable("weiBoCreateBean", repostBean);
+                        intent.putExtras(bundle);
+                        break;
+                    case PostService.POST_SERVICE_COMMENT_STATUS:
+                        intent.putExtra("postType", PostService.POST_SERVICE_COMMENT_STATUS);
+                        WeiBoCommentBean weiBoCommentBean = new WeiBoCommentBean(mEditText.getText().toString(), mStatus);
+                        bundle.putParcelable("weiBoCommentBean", weiBoCommentBean);
+                        intent.putExtras(bundle);
+                        break;
+                    case PostService.POST_SERVICE_REPLY_COMMENT:
+                        intent.putExtra("postType", PostService.POST_SERVICE_REPLY_COMMENT);
+                        CommentReplyBean commentReplyBean = new CommentReplyBean(mEditText.getText().toString(), mComment);
+                        bundle.putParcelable("commentReplyBean", commentReplyBean);
+                        intent.putExtras(bundle);
+                        break;
+                }
                 startService(intent);
                 finish();
             }
@@ -258,6 +305,13 @@ public class IdeaActivity extends Activity implements ImgListAdapter.OnFooterVie
                     changeSendButtonBg();
                 }
                 return false;
+            }
+        });
+
+        mBlankspace.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                KeyBoardUtil.openKeybord(mEditText, mContext);
             }
         });
 
@@ -277,18 +331,18 @@ public class IdeaActivity extends Activity implements ImgListAdapter.OnFooterVie
     }
 
     private void pressSendButton() {
-        mSendButton.setBackground(getResources().getDrawable(R.drawable.compose_send_corners_highlight_press_bg));
+        mSendButton.setBackgroundResource(R.drawable.compose_send_corners_highlight_press_bg);
         mSendButton.setTextColor(Color.parseColor("#ebeef3"));
     }
 
     private void highlightSendButton() {
-        mSendButton.setBackground(getResources().getDrawable(R.drawable.compose_send_corners_highlight_bg));
+        mSendButton.setBackgroundResource(R.drawable.compose_send_corners_highlight_bg);
         mSendButton.setTextColor(Color.parseColor("#fbffff"));
         mSendButton.setEnabled(true);
     }
 
     private void sendNormal() {
-        mSendButton.setBackground(getResources().getDrawable(R.drawable.compose_send_corners_bg));
+        mSendButton.setBackgroundResource(R.drawable.compose_send_corners_bg);
         mSendButton.setTextColor(Color.parseColor("#b3b3b3"));
         mSendButton.setEnabled(false);
     }
@@ -343,6 +397,7 @@ public class IdeaActivity extends Activity implements ImgListAdapter.OnFooterVie
             setLimitTextColor(mLimitTextView, inputString.toString());
         }
     };
+
 
     /**
      * 计算微博文本的长度，统计是否超过140个字，其中中文和全角的符号算1个字符，英文字符和半角字符算半个字符

@@ -8,10 +8,11 @@ import android.view.Gravity;
 import android.view.View;
 import android.view.Window;
 
-import com.example.photoviewlib.PhotoViewAttacher;
 import com.wenming.weiswift.R;
 
 import java.util.ArrayList;
+
+import uk.co.senab.photoview.PhotoViewAttacher;
 
 
 /**
@@ -56,14 +57,11 @@ public class ImageDetailsActivity extends Activity implements ViewPagerAdapter.O
         mAdapter = new ViewPagerAdapter(mDatas, this);
         mAdapter.setOnSingleTagListener(this);
         mViewPager.setAdapter(mAdapter);
-
         if (mImgNum == 1) {
             mImageDetailTopBar.setPageNumVisible(View.GONE);
         } else {
             mImageDetailTopBar.setPageNum((mPosition + 1) + "/" + mImgNum);
         }
-
-
         mViewPager.setCurrentItem(mPosition);
         mViewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
@@ -83,11 +81,10 @@ public class ImageDetailsActivity extends Activity implements ViewPagerAdapter.O
             }
         });
 
-
         mImageDetailTopBar.setOnMoreOptionsListener(new ImageDetailTopBar.OnMoreOptionsListener() {
             @Override
             public void onClick(View view) {
-                ImageOptionPopupWindow mPopupWindow = new ImageOptionPopupWindow(mContext);
+                ImageOptionPopupWindow mPopupWindow = new ImageOptionPopupWindow(mDatas.get(mViewPager.getCurrentItem()), mContext);
                 if (mPopupWindow.isShowing()) {
                     mPopupWindow.dismiss();
                 } else {

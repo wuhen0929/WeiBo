@@ -1,6 +1,5 @@
 package com.wenming.weiswift.ui.login.fragment.message.comment;
 
-import android.app.Activity;
 import android.content.Context;
 import android.graphics.Rect;
 import android.os.Bundle;
@@ -17,9 +16,9 @@ import com.wenming.weiswift.entity.Comment;
 import com.wenming.weiswift.mvp.presenter.CommentActivityPresent;
 import com.wenming.weiswift.mvp.presenter.imp.CommentActivityPresentImp;
 import com.wenming.weiswift.mvp.view.CommentActivityView;
+import com.wenming.weiswift.ui.common.BaseActivity;
 import com.wenming.weiswift.ui.common.login.Constants;
 import com.wenming.weiswift.ui.login.fragment.message.IGroupItemClick;
-import com.wenming.weiswift.ui.login.fragment.message.ItemSapce;
 import com.wenming.weiswift.utils.DensityUtil;
 import com.wenming.weiswift.utils.ScreenUtil;
 import com.wenming.weiswift.widget.endlessrecyclerview.EndlessRecyclerOnScrollListener;
@@ -32,7 +31,7 @@ import java.util.ArrayList;
 /**
  * Created by wenmingvs on 16/4/26.
  */
-public class CommentActivity extends Activity implements CommentActivityView {
+public class CommentActivity extends BaseActivity implements CommentActivityView {
     private ArrayList<Comment> mDatas;
     private CommentAdapter mAdapter;
     private HeaderAndFooterRecyclerViewAdapter mHeaderAndFooterRecyclerViewAdapter;
@@ -92,9 +91,7 @@ public class CommentActivity extends Activity implements CommentActivityView {
 
     protected void initRefreshLayout() {
         mRefrshAllData = true;
-        mSwipeRefreshLayout.setColorSchemeResources(android.R.color.holo_blue_bright,
-                android.R.color.holo_green_light, android.R.color.holo_orange_light,
-                android.R.color.holo_red_light);
+        mSwipeRefreshLayout.setColorSchemeResources(android.R.color.holo_blue_bright, android.R.color.holo_green_light, android.R.color.holo_orange_light, android.R.color.holo_red_light);
         mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
@@ -110,7 +107,6 @@ public class CommentActivity extends Activity implements CommentActivityView {
         LinearLayoutManager layoutManager = new LinearLayoutManager(mContext, LinearLayoutManager.VERTICAL, false);
         mRecyclerView.setLayoutManager(layoutManager);
         mRecyclerView.setAdapter(mHeaderAndFooterRecyclerViewAdapter);
-        mRecyclerView.addItemDecoration(new ItemSapce(DensityUtil.dp2px(mContext, 14)));
     }
 
     public EndlessRecyclerOnScrollListener mOnScrollListener = new EndlessRecyclerOnScrollListener() {

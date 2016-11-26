@@ -1,6 +1,5 @@
 package com.wenming.weiswift.ui.login.fragment.profile.favorites;
 
-import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -14,9 +13,9 @@ import com.wenming.weiswift.entity.Status;
 import com.wenming.weiswift.mvp.presenter.FavoritiesPresent;
 import com.wenming.weiswift.mvp.presenter.imp.FavoritiesPresentImp;
 import com.wenming.weiswift.mvp.view.FavoritiesActivityView;
+import com.wenming.weiswift.ui.common.BaseActivity;
 import com.wenming.weiswift.ui.login.fragment.home.weiboitem.SeachHeadView;
 import com.wenming.weiswift.ui.login.fragment.home.weiboitem.WeiboAdapter;
-import com.wenming.weiswift.ui.login.fragment.home.weiboitem.WeiboItemSapce;
 import com.wenming.weiswift.widget.endlessrecyclerview.EndlessRecyclerOnScrollListener;
 import com.wenming.weiswift.widget.endlessrecyclerview.HeaderAndFooterRecyclerViewAdapter;
 import com.wenming.weiswift.widget.endlessrecyclerview.RecyclerViewUtils;
@@ -28,7 +27,7 @@ import java.util.ArrayList;
 /**
  * Created by wenmingvs on 16/4/27.
  */
-public class FavoritiesActivity extends Activity implements FavoritiesActivityView {
+public class FavoritiesActivity extends BaseActivity implements FavoritiesActivityView {
     private ArrayList<Status> mDatas = new ArrayList<Status>();
     public WeiboAdapter mAdapter;
     public Context mContext;
@@ -83,7 +82,7 @@ public class FavoritiesActivity extends Activity implements FavoritiesActivityVi
         mRecyclerView.setLayoutManager(layoutManager);
         mRecyclerView.setAdapter(mHeaderAndFooterRecyclerViewAdapter);
         RecyclerViewUtils.setHeaderView(mRecyclerView, new SeachHeadView(mContext));
-        mRecyclerView.addItemDecoration(new WeiboItemSapce((int) mContext.getResources().getDimension(R.dimen.home_weiboitem_space)));
+        //mRecyclerView.addItemDecoration(new WeiboItemSapce((int) mContext.getResources().getDimension(R.dimen.home_weiboitem_space)));
     }
 
 

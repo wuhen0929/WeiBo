@@ -16,6 +16,7 @@ import com.wenming.weiswift.ui.common.login.AccessTokenKeeper;
 import com.wenming.weiswift.ui.common.login.Constants;
 import com.wenming.weiswift.utils.SDCardUtil;
 import com.wenming.weiswift.utils.ToastUtil;
+import com.wenming.weiswift.widget.toast.LoadedToast;
 
 import java.util.ArrayList;
 import java.util.Timer;
@@ -58,7 +59,7 @@ public class StatusListModelImp implements StatusListModel {
         mContext = context;
         mOnDataFinishedUIListener = onDataFinishedListener;
         long sinceId = checkout(Constants.GROUP_TYPE_ALL);
-        mStatusesAPI.friendsTimeline(sinceId, 0, NewFeature.GET_WEIBO_NUMS, 1, false, 0, false, pullToRefreshListener);
+        mStatusesAPI.homeTimeline(sinceId, 0, NewFeature.GET_WEIBO_NUMS, 1, false, 0, false, pullToRefreshListener);
     }
 
 
@@ -135,7 +136,7 @@ public class StatusListModelImp implements StatusListModel {
         mOnDataFinishedUIListener = onDataFinishedListener;
         StatusesAPI mStatusesAPI = new StatusesAPI(context, Constants.APP_KEY, AccessTokenKeeper.readAccessToken(context));
         String maxId = mStatusList.get(mStatusList.size() - 1).id;
-        mStatusesAPI.friendsTimeline(0, Long.valueOf(maxId), NewFeature.LOADMORE_WEIBO_ITEM, 1, false, 0, false, nextPageListener);
+        mStatusesAPI.homeTimeline(0, Long.valueOf(maxId), NewFeature.LOADMORE_WEIBO_ITEM, 1, false, 0, false, nextPageListener);
     }
 
 
@@ -246,6 +247,7 @@ public class StatusListModelImp implements StatusListModel {
             ArrayList<Status> temp = statusList.statuses;
             if (temp != null && temp.size() > 0) {
                 //请求回来的数据的maxid与列表中的第一条的id相同，说明是局部刷新，否则是全局刷新
+                LoadedToast.showToast(mContext, temp.size()+ "条新微博");
                 //如果是全局刷新,需要清空列表中的全部微博
                 if (mStatusList.size() == 0 || !String.valueOf(statusList.max_id).equals(mStatusList.get(0).id)) {
                     mStatusList.clear();
@@ -261,7 +263,7 @@ public class StatusListModelImp implements StatusListModel {
                 mRefrshAll = false;
             } else {
                 if (mRefrshAll == false) {//局部刷新，get不到数据
-                    ToastUtil.showShort(mContext, "没有更新的内容了");
+                    LoadedToast.showToast(mContext, "0条新微博");
                     mOnDataFinishedUIListener.noMoreData();
                 } else {//全局刷新，get不到数据
                     mOnDataFinishedUIListener.noDataInFirstLoad("你还没有为此组增加成员");

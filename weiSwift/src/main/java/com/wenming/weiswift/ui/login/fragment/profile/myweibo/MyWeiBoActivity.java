@@ -1,6 +1,5 @@
 package com.wenming.weiswift.ui.login.fragment.profile.myweibo;
 
-import android.app.Activity;
 import android.content.Context;
 import android.graphics.Rect;
 import android.os.Bundle;
@@ -9,6 +8,7 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.Gravity;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -18,11 +18,12 @@ import com.wenming.weiswift.entity.Status;
 import com.wenming.weiswift.mvp.presenter.MyWeiBoActivityPresent;
 import com.wenming.weiswift.mvp.presenter.imp.MyWeiBoActivityPresentImp;
 import com.wenming.weiswift.mvp.view.MyWeiBoActivityView;
+import com.wenming.weiswift.ui.common.BaseActivity;
+import com.wenming.weiswift.ui.common.dialog.ArrowDialog;
 import com.wenming.weiswift.ui.common.login.AccessTokenKeeper;
 import com.wenming.weiswift.ui.common.login.Constants;
 import com.wenming.weiswift.ui.login.fragment.home.weiboitem.SeachHeadView;
 import com.wenming.weiswift.ui.login.fragment.home.weiboitem.WeiboAdapter;
-import com.wenming.weiswift.ui.login.fragment.home.weiboitem.WeiboItemSapce;
 import com.wenming.weiswift.ui.login.fragment.message.IGroupItemClick;
 import com.wenming.weiswift.utils.DensityUtil;
 import com.wenming.weiswift.utils.ScreenUtil;
@@ -37,8 +38,7 @@ import java.util.ArrayList;
 /**
  * Created by wenmingvs on 16/4/27.
  */
-public class MyWeiBoActivity extends Activity implements MyWeiBoActivityView {
-
+public class MyWeiBoActivity extends BaseActivity implements MyWeiBoActivityView {
     public WeiboAdapter mAdapter;
     private ArrayList<Status> mDatas;
     public Context mContext;
@@ -52,7 +52,6 @@ public class MyWeiBoActivity extends Activity implements MyWeiBoActivityView {
     private MyWeiBoActivityPresent mMyWeiBoActivityPresent;
     private MyWeiBoPopWindow mMyWeiBoPopWindow;
     private int mCurrentGroup = Constants.GROUP_MYWEIBO_TYPE_ALL;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -93,8 +92,15 @@ public class MyWeiBoActivity extends Activity implements MyWeiBoActivityView {
         mAdapter = new WeiboAdapter(mDatas, mContext) {
             @Override
             public void arrowClick(Status status, int position) {
-                MyWeiBoArrowWindow popupWindow = new MyWeiBoArrowWindow(mContext, mDatas.get(position), mAdapter, position, "我的" + mGroupName.getText().toString());
-                popupWindow.showAtLocation(mRecyclerView, Gravity.CENTER, 0, 0);
+//                MyWeiBoArrowWindow popupWindow = new MyWeiBoArrowWindow(mContext, mDatas.get(position), mAdapter, position, "我的" + mGroupName.getText().toString());
+//                popupWindow.showAtLocation(mRecyclerView, Gravity.CENTER, 0, 0);
+                ArrowDialog arrowDialog = new MyWeiBoArrowWindow.Builder(mContext, mDatas.get(position), mAdapter, position, "我的" + mGroupName.getText().toString())
+                        .setCanceledOnTouchOutside(true)
+                        .setCancelable(true)
+                        .create();
+                int width = ScreenUtil.getScreenWidth(mContext) - DensityUtil.dp2px(mContext, 80);
+                arrowDialog.show();
+                arrowDialog.getWindow().setLayout(width, (ViewGroup.LayoutParams.WRAP_CONTENT));
             }
         };
         mHeaderAndFooterRecyclerViewAdapter = new HeaderAndFooterRecyclerViewAdapter(mAdapter);
@@ -102,7 +108,7 @@ public class MyWeiBoActivity extends Activity implements MyWeiBoActivityView {
         mRecyclerView.setLayoutManager(layoutManager);
         mRecyclerView.setAdapter(mHeaderAndFooterRecyclerViewAdapter);
         RecyclerViewUtils.setHeaderView(mRecyclerView, new SeachHeadView(mContext));
-        mRecyclerView.addItemDecoration(new WeiboItemSapce((int) mContext.getResources().getDimension(R.dimen.home_weiboitem_space)));
+        //mRecyclerView.addItemDecoration(new WeiboItemSapce((int) mContext.getResources().getDimension(R.dimen.home_weiboitem_space)));
     }
 
     private void initGroupWindows() {

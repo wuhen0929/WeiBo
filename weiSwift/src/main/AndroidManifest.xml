@@ -125,6 +125,7 @@
         <activity
             android:name=".ui.login.fragment.profile.myphoto.MyPhotoActivity"
             android:theme="@style/WeiBoHoloWindowTranslucent" />
+        <activity android:name=".MyReactActivity"/>
     </application>
 
 </manifest>

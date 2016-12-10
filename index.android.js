@@ -1,52 +1,38 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- */
 'use strict';
 
-var React = require('react-native');
+import React from 'react';
+var ReactNative = require('react-native');
 var {
   AppRegistry,
   StyleSheet,
   Text,
   View,
-} = React;
+  TouchableHighlight,
+  ToastAndroid
+} = ReactNative;
 
-var AwesomeProject = React.createClass({
-  render: function() {
+class MyAwesomeApp extends React.Component {
+  render() {
     return (
       <View style={styles.container}>
-        <Text style={styles.welcome}>
-          Welcome to React Native!
-        </Text>
-        <Text style={styles.instructions}>
-          To get started, edit index.android.js
-        </Text>
-        <Text style={styles.instructions}>
-          Shake or press menu button for dev menu
-        </Text>
+        <Text style={styles.hello}>Hello, World</Text>
+        <TouchableHighlight onPress={() => ToastAndroid.show("this is a toast", ToastAndroid.SHORT)}>
+          <Text>Proper Touch Handling</Text>
+        </TouchableHighlight>
       </View>
-    );
+    )
   }
-});
-
+}
 var styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#F5FCFF',
   },
-  welcome: {
+  hello: {
     fontSize: 20,
     textAlign: 'center',
     margin: 10,
   },
-  instructions: {
-    textAlign: 'center',
-    color: '#333333',
-    marginBottom: 5,
-  },
 });
 
-AppRegistry.registerComponent('AwesomeProject', () => AwesomeProject);
+AppRegistry.registerComponent('MyAwesomeApp', () => MyAwesomeApp);

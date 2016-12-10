@@ -18,6 +18,7 @@ import android.widget.TextView;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.display.CircleBitmapDisplayer;
+import com.wenming.weiswift.MyReactActivity;
 import com.wenming.weiswift.R;
 import com.wenming.weiswift.api.UsersAPI;
 import com.wenming.weiswift.entity.User;
@@ -106,7 +107,7 @@ public class ProfileFragment extends Fragment implements ProfileFragmentView {
         mView.findViewById(R.id.more_layout).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(mContext, ReactNativeActivity.class);
+                Intent intent = new Intent(mContext, MyReactActivity.class);
                 mActivity.startActivity(intent);
             }
         });

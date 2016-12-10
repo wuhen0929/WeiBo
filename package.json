@@ -1,11 +1,27 @@
 {
-  "name": "AwesomeProject",
+  "name": "weibo",
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "start": "react-native start"
+    "start": "node node_modules/react-native/local-cli/cli.js start"
   },
   "dependencies": {
+    "react": "^0.14.8",
     "react-native": "^0.22.2"
-  }
+  },
+  "description": "高仿新浪微博客户端 -----",
+  "main": "index.android.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wuhen0929/WeiBo.git"
+  },
+  "keywords": [
+    "weibo"
+  ],
+  "author": "brad",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/wuhen0929/WeiBo/issues"
+  },
+  "homepage": "https://github.com/wuhen0929/WeiBo#readme"
 }
